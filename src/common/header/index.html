@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- 兼容ie8媒体查询 -->
+    <!--[if lte IE 8]>
+        <script src="js/html5shiv.min.js"></script>
+        <script src="js/respond.min.js"></script>
+    <![endif]-->
+    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon"/>
+
+    <!-- build:css css/vendor.css -->
+    <link rel="stylesheet" href="../../libs/bootstrap/css/bootstrap.min.css">
+    <!-- endbuild -->
+
+    <!-- build:css css/main.min.css -->
+    <link rel="stylesheet" href="../../pages/index/index.less">
+    <link rel="stylesheet" href="../../pages/center/center.less">
+    <!-- endbuild -->
+    <title>{{title}} - gulp教程</title>
+</head>
+<body>
+    {{if header}}
+    <header id="header" class="header">
+        <div class="w">
+            欢迎来到gulp构建项目
+        </div>
+    </header>
+    {{/if}}

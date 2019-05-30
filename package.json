@@ -1,0 +1,49 @@
+{
+  "name": "gulp-project",
+  "version": "1.0.0",
+  "description": "一个使用gulp3构建的项目",
+  "main": "index.js",
+  "author": "guang.shi",
+  "license": "ISC",
+  "scripts": {
+    "start": "npm run dev",
+    "dev": "gulp dev",
+    "build": "gulp build",
+    "lint": "eslint --ext .js,.html src",
+    "check": "gulp uglify_check"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.1.6",
+    "@babel/preset-env": "^7.1.6",
+    "browser-sync": "^2.26.3",
+    "eslint": "^5.16.0",
+    "eslint-config-vui": "^1.0.1",
+    "eslint-plugin-html": "^5.0.5",
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^6.0.0",
+    "gulp-babel": "^8.0.0",
+    "gulp-cache": "^1.0.2",
+    "gulp-clean": "^0.4.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-csso": "^3.0.1",
+    "gulp-filter": "^6.0.0",
+    "gulp-html-tpl": "^0.5.2",
+    "gulp-htmlmin": "^5.0.1",
+    "gulp-if": "^2.0.2",
+    "gulp-imagemin": "^5.0.3",
+    "gulp-less": "^4.0.1",
+    "gulp-rename": "^1.4.0",
+    "gulp-rev-all": "^2.0.1",
+    "gulp-rev-collector-dxb": "^1.3.2",
+    "gulp-rev-dxb": "^9.0.1",
+    "gulp-uglify": "^3.0.1",
+    "gulp-useref": "^3.1.6",
+    "gulp-watch": "^5.0.1",
+    "pump": "^3.0.0",
+    "run-sequence": "^2.2.1"
+  },
+  "dependencies": {
+    "art-template": "^4.13.2",
+    "sg-utils": "^1.4.6"
+  }
+}
