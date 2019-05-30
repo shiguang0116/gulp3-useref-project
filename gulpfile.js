@@ -56,26 +56,36 @@ gulp.task('useref', function() {
     var cssLibsFilter = filter(css_libs_path, { restore: true })
     var cssMainFilter = filter(css_main_path, { restore: true })
     var htmlCommonFilter = filter(html_common_path, { restore: true })
-    var jsFilter = filter('**/*.js', { restore: true })
-    var cssFilter = filter('**/*.css', { restore: true })
 
     return gulp.src('src/common/**/*.html')
         .pipe(useref()) // 解析html中的构建块
 
+        // 生成版本号
+        .pipe(revAll.revision({
+            dontRenameFile: ['.html'], // 不给 html 文件添加版本号
+            dontUpdateReference: ['.html'] // 不给文件里链接的html加版本号
+        }))
+
         // js_libs
         .pipe(jsLibsFilter) // 过滤指定文件
         .pipe(gulpif(env === 'build', uglify())) // 压缩js
+        .pipe(rename({ dirname: 'js' })) // 定义文件名
+        .pipe(gulp.dest('./dist')) // 打包
         .pipe(jsLibsFilter.restore) // 恢复过滤
 
         // js_main
         .pipe(jsMainFilter)
         .pipe(babel()) // 编译es6语法
-        .pipe(gulpif(env === 'build', uglify())) // 压缩js
+        .pipe(gulpif(env === 'build', uglify()))
+        .pipe(rename({ dirname: 'js' }))
+        .pipe(gulp.dest('./dist'))
         .pipe(jsMainFilter.restore)
 
         // css_libs
         .pipe(cssLibsFilter)
         .pipe(gulpif(env === 'build', csso())) // 压缩css
+        .pipe(rename({ dirname: 'css' }))
+        .pipe(gulp.dest('./dist'))
         .pipe(cssLibsFilter.restore)
 
         // css_main
@@ -89,35 +99,15 @@ gulp.task('useref', function() {
             browsers: ['last 2 version', 'safari 5', 'ie 8', 'ie 9', 'opera 12.1', 'ios 6', 'android 4'],
             cascade: false // 是否美化
         }))
-        .pipe(gulpif(env === 'build', csso())) // 压缩css
+        .pipe(gulpif(env === 'build', csso()))
+        .pipe(rename({ dirname: 'css' }))
+        .pipe(gulp.dest('./dist'))
         .pipe(cssMainFilter.restore)
-
-        // 生成版本号
-        .pipe(revAll.revision({
-            dontRenameFile: ['.html'], // 不给 html 文件添加版本号
-            dontUpdateReference: ['.html'] // 不给文件里链接的html加版本号
-        }))
 
         // 打包 html_common
         .pipe(htmlCommonFilter)
         .pipe(gulp.dest('./dist/common'))
         .pipe(htmlCommonFilter.restore)
-
-        // 打包 js 文件
-        .pipe(jsFilter)
-        .pipe(rename({
-            dirname: 'js'
-        }))
-        .pipe(gulp.dest('./dist'))
-        .pipe(jsFilter.restore)
-
-        // 打包 css 文件
-        .pipe(cssFilter)
-        .pipe(rename({
-            dirname: 'css'
-        }))
-        .pipe(gulp.dest('./dist'))
-        .pipe(cssFilter.restore)
 })
 
 // html模板处理

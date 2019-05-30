@@ -1,6 +1,6 @@
-﻿# gulp3-project
+﻿# gulp3-useref-project
 
-> 一个基于gulp3构建的项目
+> 一个基于gulp3构建的项目（使用gulp-useref解析）
 
 ## 构建步骤
 

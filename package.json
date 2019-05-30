@@ -1,7 +1,7 @@
 {
-  "name": "gulp-project",
+  "name": "gulp3-useref-project",
   "version": "1.0.0",
-  "description": "一个使用gulp3构建的项目",
+  "description": "一个基于gulp3构建的项目（使用gulp-useref解析）",
   "main": "index.js",
   "author": "guang.shi",
   "license": "ISC",
