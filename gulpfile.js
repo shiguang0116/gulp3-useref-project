@@ -6,11 +6,9 @@
 'use strict'
 
 var gulp = require('gulp')
-// var fs = require('fs') // 创建文件
 var babel = require('gulp-babel') // 编译es6
 var htmltpl = require('gulp-html-tpl') // 引用html模板
 var artTemplate = require('art-template') // 模板渲染
-// var concat = require('gulp-concat') // 合并文件
 var rename = require('gulp-rename') // 重命名
 var clean = require('gulp-clean') // 清空文件夹
 var gulpif = require('gulp-if') // 条件判断
@@ -19,11 +17,9 @@ var pump = require('pump')
 var csso = require('gulp-csso') // css压缩
 var less = require('gulp-less') // less编译
 var autoprefixer = require('gulp-autoprefixer')	// 自动添加CSS前缀
-// var htmlmin = require('gulp-htmlmin') // html压缩
+var htmlmin = require('gulp-htmlmin') // html压缩
 var imagemin = require('gulp-imagemin') // 图片压缩
 var cache = require('gulp-cache') // 图片缓存（只压缩修改的图片）
-// var rev = require('gulp-rev-dxb') // 生成版本号清单
-// var revCollector = require('gulp-rev-collector-dxb') // 替换成版本号文件
 var browserSync = require('browser-sync').create() // 用来打开一个浏览器
 var watch = require('gulp-watch') // 监听文件（修改、新建、删除）
 var runSequence = require('run-sequence') // 按顺序执行task
@@ -49,47 +45,39 @@ function set_env(type) {
     env = process.env.NODE_ENV = type || 'dev'
 }
 
-// 解析html中的构建块（js、css打包 | 添加版本号）
-gulp.task('useref', function() {
-    var jsLibsFilter = filter(js_libs_path, { restore: true })
-    var jsMainFilter = filter(js_main_path, { restore: true })
-    var cssLibsFilter = filter(css_libs_path, { restore: true })
-    var cssMainFilter = filter(css_main_path, { restore: true })
-    var htmlCommonFilter = filter(html_common_path, { restore: true })
-
-    return gulp.src('src/common/**/*.html')
-        .pipe(useref()) // 解析html中的构建块
-
-        // 生成版本号
-        .pipe(revAll.revision({
-            dontRenameFile: ['.html'], // 不给 html 文件添加版本号
-            dontUpdateReference: ['.html'] // 不给文件里链接的html加版本号
-        }))
-
-        // js_libs
-        .pipe(jsLibsFilter) // 过滤指定文件
-        .pipe(gulpif(env === 'build', uglify())) // 压缩js
-        .pipe(rename({ dirname: 'js' })) // 定义文件名
-        .pipe(gulp.dest('./dist')) // 打包
-        .pipe(jsLibsFilter.restore) // 恢复过滤
-
-        // js_main
-        .pipe(jsMainFilter)
+// js_libs
+gulp.task('js_libs', function() {
+    return gulp.src(html_common_path)
+        .pipe(useref())
+        .pipe(filter(js_libs_path))
+        .pipe(gulpif(env === 'build', uglify()))
+        .pipe(rename({ dirname: '' }))
+        .pipe(gulp.dest('dist/js'))
+})
+// js_main
+gulp.task('js_main', function() {
+    return gulp.src(html_common_path)
+        .pipe(useref())
+        .pipe(filter(js_main_path))
         .pipe(babel()) // 编译es6语法
         .pipe(gulpif(env === 'build', uglify()))
-        .pipe(rename({ dirname: 'js' }))
-        .pipe(gulp.dest('./dist'))
-        .pipe(jsMainFilter.restore)
-
-        // css_libs
-        .pipe(cssLibsFilter)
+        .pipe(rename({ dirname: '' }))
+        .pipe(gulp.dest('dist/js'))
+})
+// css_libs
+gulp.task('css_libs', function() {
+    return gulp.src(html_common_path)
+        .pipe(useref())
+        .pipe(filter(css_libs_path))
         .pipe(gulpif(env === 'build', csso())) // 压缩css
         .pipe(rename({ dirname: 'css' }))
-        .pipe(gulp.dest('./dist'))
-        .pipe(cssLibsFilter.restore)
-
-        // css_main
-        .pipe(cssMainFilter)
+        .pipe(gulp.dest('dist/css'))
+})
+// css_main
+gulp.task('css_main', function() {
+    return gulp.src(html_common_path)
+        .pipe(useref())
+        .pipe(filter(css_main_path))
         .pipe(less()) // 编译less
         .on('error', function(err) { // 解决编译出错，监听被阻断的问题
             console.log('\x1B[31m%s\x1B[0m', '\nLess Error: ' + err.message + '\n')
@@ -100,19 +88,88 @@ gulp.task('useref', function() {
             cascade: false // 是否美化
         }))
         .pipe(gulpif(env === 'build', csso()))
-        .pipe(rename({ dirname: 'css' }))
-        .pipe(gulp.dest('./dist'))
-        .pipe(cssMainFilter.restore)
-
-        // 打包 html_common
-        .pipe(htmlCommonFilter)
-        .pipe(gulp.dest('./dist/common'))
-        .pipe(htmlCommonFilter.restore)
+        .pipe(rename({ dirname: '' }))
+        .pipe(gulp.dest('dist/css'))
 })
+// html_common
+gulp.task('html_common', function() {
+    return gulp.src(html_common_path)
+        .pipe(useref())
+        // 生成版本号
+        .pipe(gulpif(env === 'build', revAll.revision({
+            dontRenameFile: ['.html'], // 不给 html 文件添加版本号
+            dontUpdateReference: ['.html'] // 不给文件里链接的html加版本号
+        })))
+        // 打包 html_common
+        .pipe(filter(html_common_path))
+        .pipe(gulp.dest('dist/common'))
+})
+
+// // 解析html中的构建块（js、css打包 | 添加版本号）
+// gulp.task('useref', function(watch_type) {
+//     var jsLibsFilter = filter(js_libs_path, { restore: true })
+//     var jsMainFilter = filter(js_main_path, { restore: true })
+//     var cssLibsFilter = filter(css_libs_path, { restore: true })
+//     var cssMainFilter = filter(css_main_path, { restore: true })
+//     var htmlCommonFilter = filter(html_common_path, { restore: true })
+
+//     return gulp.src('src/common/**/*.html')
+//         .pipe(useref()) // 解析html中的构建块
+
+//         // 生成版本号
+//         .pipe(gulpif(env === 'build', revAll.revision({
+//             dontRenameFile: ['.html'], // 不给 html 文件添加版本号
+//             dontUpdateReference: ['.html'] // 不给文件里链接的html加版本号
+//         })))
+
+//         // js_libs
+//         .pipe(jsLibsFilter) // 过滤指定文件
+//         .pipe(gulpif(env === 'build', uglify())) // 压缩js
+//         .pipe(rename({ dirname: '' })) // 清空文件夹
+//         .pipe(gulp.dest('dist/js')) // 打包
+//         .pipe(jsLibsFilter.restore) // 恢复过滤
+
+//         // js_main
+//         .pipe(jsMainFilter)
+//         .pipe(babel()) // 编译es6语法
+//         .pipe(gulpif(env === 'build', uglify()))
+//         .pipe(rename({ dirname: '' }))
+//         .pipe(gulp.dest('dist/js'))
+//         .pipe(jsMainFilter.restore)
+
+//         // css_libs
+//         .pipe(cssLibsFilter)
+//         .pipe(gulpif(env === 'build', csso())) // 压缩css
+//         .pipe(rename({ dirname: 'css' }))
+//         .pipe(gulp.dest('dist/css'))
+//         .pipe(cssLibsFilter.restore)
+
+//         // css_main
+//         .pipe(cssMainFilter)
+//         .pipe(less()) // 编译less
+//         .on('error', function(err) { // 解决编译出错，监听被阻断的问题
+//             console.log('\x1B[31m%s\x1B[0m', '\nLess Error: ' + err.message + '\n')
+//             this.end()
+//         })
+//         .pipe(autoprefixer({
+//             browsers: ['last 2 version', 'safari 5', 'ie 8', 'ie 9', 'opera 12.1', 'ios 6', 'android 4'],
+//             cascade: false // 是否美化
+//         }))
+//         .pipe(gulpif(env === 'build', csso()))
+//         .pipe(rename({ dirname: '' }))
+//         .pipe(gulp.dest('dist/css'))
+//         .pipe(cssMainFilter.restore)
+
+//         // 打包 html_common
+//         .pipe(htmlCommonFilter)
+//         .pipe(gulp.dest('dist/common'))
+//         .pipe(htmlCommonFilter.restore)
+// })
 
 // html模板处理
 gulp.task('html', function() {
-    var dir = env === 'dev' ? 'src' : 'dist'
+    var dir = 'dist'
+    // var dir = env === 'dev' ? 'src' : 'dist'
     var common_paths = [`${dir}/common`, 'src/components']
 
     return gulp.src(html_main_path)
@@ -132,6 +189,12 @@ gulp.task('html', function() {
         .pipe(rename({
             dirname: '' // 清空路径
         }))
+        .pipe(gulpif(env === 'build', htmlmin({
+            removeComments: true, // 清除HTML注释
+            collapseWhitespace: true, // 压缩HTML
+            minifyJS: true, // 压缩页面JS
+            minifyCSS: true // 压缩页面CSS
+        })))
         .pipe(gulp.dest('dist'))
 })
 
@@ -210,7 +273,8 @@ gulp.task('dev', function(cb) {
     set_env('dev')
     runSequence(
         ['clean'],
-        ['html', 'images', 'fonts'],
+        ['html_common', 'js_libs', 'js_main', 'css_libs', 'css_main', 'images', 'fonts'], // 不分先后的任务最好并行执行，提高效率
+        ['html'],
         ['browser', 'watch'],
         cb)
 })
@@ -220,8 +284,8 @@ gulp.task('build', function(cb) {
     set_env('build')
     runSequence(
         ['clean'], // 首先清理文件，否则会把新打包的文件清掉
-        ['useref'],
-        ['html', 'images', 'fonts'], // 不分先后的任务最好并行执行，提高效率
+        ['html_common', 'js_libs', 'js_main', 'css_libs', 'css_main', 'images', 'fonts'], // 不分先后的任务最好并行执行，提高效率
+        ['html'],
         ['clean_extra'], // 清空多余的文件
         cb)
 })
